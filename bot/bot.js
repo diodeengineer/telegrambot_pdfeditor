@@ -298,7 +298,10 @@ import sendDonationMessage from '../utils/donation.js';
 
 dotenv.config();
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+
+const bot = new Telegraf(process.env.BOT_TOKEN, {
+  telegram: { webhookReply: true },
+});
 
 // — Local state
 const userFiles = new Map();
