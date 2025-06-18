@@ -643,6 +643,41 @@ Upload a PDF to begin!
   ctx.reply(msg.trim(), { parse_mode: 'Markdown' });
 });
 
+
+bot.command('donate', async (ctx) => {
+  // console.log('/donate triggered');
+
+  try {
+    await ctx.reply('Support the bot ❤️', {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: 'PayPal', url: 'https://paypal.me/deepakzbaidya@gmail.com' }]
+        ]
+      }
+    });
+
+    await ctx.reply('Donate via UPI Id: `qanda@ybl` OR (Scan QR below)', {
+      parse_mode: 'Markdown'
+    });
+
+    await ctx.replyWithPhoto({ source: './assets/upi_qr.jpeg' }, {
+      caption: 'Scan this to donate via UPI 🙏'
+    });
+  } catch (err) {
+    console.error("❌ Error in /donate command:", err);
+    await ctx.reply('Something went wrong. Please try again later.');
+  }
+});
+
+
+
+
+
+
+
+
+
+
 // --- Document Upload Handler ---
 bot.on('document', async (ctx) => {
   const chatId = ctx.chat.id;
@@ -674,6 +709,13 @@ bot.on('callback_query', async (ctx) => {
   const action = ctx.callbackQuery.data;
   const chatId = ctx.chat.id;
   const fileIds = userFiles.get(chatId) || [];
+
+
+
+
+
+
+
 
   if (action === 'cancel_split') {
     userProcessing.set(chatId, false);
@@ -720,6 +762,10 @@ bot.on('callback_query', async (ctx) => {
       ctx.answerCbQuery();
     }
   }
+
+
+ 
+
 
   else if (action === 'split_custom') {
     userAwaitingCustomSplit.set(chatId, true);
