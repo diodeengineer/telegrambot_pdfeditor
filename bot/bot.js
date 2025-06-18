@@ -651,7 +651,7 @@ bot.command('donate', async (ctx) => {
     await ctx.reply('Support the bot ❤️', {
       reply_markup: {
         inline_keyboard: [
-          [{ text: 'PayPal', url: 'https://paypal.me/deepakzbaidya@gmail.com' }]
+          [{ text: 'PayPal', url: 'https://paypal.me/deelep?country.x=IN&locale.x=en_GB'}]
         ]
       }
     });
