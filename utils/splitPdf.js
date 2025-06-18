@@ -79,3 +79,10 @@ export async function splitPdf(pdfBuffer, outputDir, splitPoints = []) {
 
   return outputPaths;
 }
+
+
+
+
+
+
+
