@@ -290,7 +290,7 @@ import axios from 'axios';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import path from 'path';
-
+import User from '../models/user.js'
 import { splitPdf } from '../utils/splitPdf.js';
 import { mergePdfs } from '../utils/mergePdf.js';
 import { extractTextFromPdf } from '../utils/extractTextFromPdf.js';
@@ -310,7 +310,69 @@ const userProcessing = new Map();
 const uploadsDir = './uploads';
 if (!existsSync(uploadsDir)) mkdirSync(uploadsDir);
 
-// — /start
+
+// --- USER TRACKING MIDDLEWARE ---
+// This middleware runs for EVERY incoming update. It records/updates user data in MongoDB.
+// Placed at the top of the bot's logic to ensure it runs before other handlers.
+bot.use(async (ctx, next) => {
+    // Check if the update is from a user and not from a bot, channel, or group (unless intended)
+    if (!ctx.from || ctx.from.is_bot) {
+        return next(); // Skip processing if it's a bot or doesn't have 'from' (e.g., channel post)
+    }
+
+const telegramId = ctx.from.id;
+    const username = ctx.from.username;
+    const firstName = ctx.from.first_name;
+    const lastName = ctx.from.last_name;
+    const isPremium = ctx.from.is_premium || false; // `is_premium` might be available
+    // `isBot` is already checked above for exclusion, but good to store for completeness
+    const isBotUser = ctx.from.is_bot || false;
+    const languageCode = ctx.from.language_code;
+
+ try {
+        // Find the user in the database by their unique Telegram ID
+        let user = await User.findOne({ telegramId: telegramId });
+
+        if (user) {
+
+ // User exists: Update their changeable details and the lastInteraction timestamp
+            user.username = username;
+            user.firstName = firstName;
+            user.lastName = lastName;
+            user.isPremium = isPremium;
+            user.isBot = isBotUser; // Store if they are a bot user (unlikely if ctx.from.is_bot check works)
+            user.languageCode = languageCode;
+            await user.save(); // The pre-save hook in User.js updates `lastInteraction`
+            // console.log(`User ${user.firstName} (ID: ${user.telegramId}) updated.`); // Uncomment for debugging
+        } else {
+            // New user: Create a new user record in the database
+ user = new User({
+                telegramId: telegramId,
+                username: username,
+                firstName: firstName,
+                lastName: lastName,
+                isPremium: isPremium,
+                isBot: isBotUser,
+                languageCode: languageCode
+            });
+            await user.save();
+            console.log(`New user "${user.firstName} ${user.lastName || ''}" (ID: ${user.telegramId}) added to database.`);
+        }
+  } catch (error) {
+        console.error('Error saving/updating user to database:', error);
+    }
+
+    // IMPORTANT: Call `next()` to pass control to the next middleware or specific handlers (like bot.start, bot.on('document'))
+    return next();
+});
+
+// --- COMMAND HANDLERS ---
+
+// /start command
+ 
+
+
+
 bot.start((ctx) => {
   const chatId = ctx.chat.id;
   const name = ctx.from.first_name;
